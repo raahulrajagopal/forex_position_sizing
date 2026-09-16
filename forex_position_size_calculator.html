@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Position Size Calculator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #15130f;
+    --bg-soft: #1c1914;
+    --surface: #211d17;
+    --border: #362f24;
+    --border-soft: #2a251d;
+    --ink: #efe9dd;
+    --ink-muted: #a89a83;
+    --ink-faint: #756a59;
+    --copper: #c97a3d;
+    --copper-soft: rgba(201, 122, 61, 0.14);
+    --sage: #7fa88f;
+    --font-head: 'Space Grotesk', 'Segoe UI', sans-serif;
+    --font-body: 'IBM Plex Sans', 'Segoe UI', sans-serif;
+    --font-mono: 'IBM Plex Mono', 'Courier New', monospace;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-body);
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    min-height: 100vh;
+    padding: 32px 20px 48px;
+  }
+
+  .wrap {
+    max-width: 920px;
+    margin: 0 auto;
+  }
+
+  .page-head {
+    margin-bottom: 28px;
+    border-bottom: 1px solid var(--border-soft);
+    padding-bottom: 20px;
+  }
+
+  h1 {
+    font-family: var(--font-head);
+    font-weight: 600;
+    font-size: clamp(1.4rem, 4vw, 1.85rem);
+    margin: 0 0 6px 0;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+  }
+
+  .page-head p {
+    margin: 0;
+    color: var(--ink-muted);
+    font-size: 0.92rem;
+    max-width: 60ch;
+    line-height: 1.5;
+  }
+
+  .risk-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px 20px;
+    margin-bottom: 28px;
+    display: flex;
+    align-items: flex-end;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .field label {
+    font-size: 0.78rem;
+    color: var(--ink-muted);
+    font-weight: 500;
+  }
+
+  .risk-field {
+    flex: 1 1 200px;
+  }
+
+  .amount-input {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  .amount-input .unit {
+    position: absolute;
+    left: 14px;
+    color: var(--copper);
+    font-family: var(--font-mono);
+    font-weight: 600;
+    font-size: 1.05rem;
+    pointer-events: none;
+  }
+
+  input[type="number"] {
+    background: var(--bg-soft);
+    border: 1px solid var(--border);
+    color: var(--ink);
+    padding: 11px 14px;
+    border-radius: 7px;
+    font-size: 1.02rem;
+    font-family: var(--font-mono);
+    width: 100%;
+    transition: border-color 0.15s;
+  }
+
+  .amount-input input[type="number"] {
+    padding-left: 30px;
+  }
+
+  input[type="number"]:focus {
+    outline: none;
+    border-color: var(--copper);
+  }
+
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button {
+    opacity: 0.5;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 16px;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .card-head {
+    margin-bottom: 16px;
+  }
+
+  .card h2 {
+    font-family: var(--font-head);
+    font-size: 1.02rem;
+    font-weight: 600;
+    margin: 0 0 4px 0;
+    color: var(--ink);
+  }
+
+  .card .examples {
+    font-size: 0.76rem;
+    color: var(--ink-faint);
+  }
+
+  .card .field {
+    margin-bottom: 14px;
+  }
+
+  .result {
+    margin-top: auto;
+    border-top: 1px solid var(--border-soft);
+    padding-top: 14px;
+  }
+
+  .result-lots {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 8px;
+  }
+
+  .result-lots .k {
+    font-size: 0.78rem;
+    color: var(--ink-muted);
+  }
+
+  .result-lots .v {
+    font-family: var(--font-mono);
+    font-weight: 600;
+    font-size: 1.35rem;
+    color: var(--copper);
+  }
+
+  .result-units {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.82rem;
+  }
+
+  .result-units .k {
+    color: var(--ink-faint);
+  }
+
+  .result-units .v {
+    font-family: var(--font-mono);
+    color: var(--sage);
+  }
+
+  footer {
+    margin-top: 26px;
+    color: var(--ink-faint);
+    font-size: 0.78rem;
+    line-height: 1.6;
+    border-top: 1px solid var(--border-soft);
+    padding-top: 16px;
+  }
+
+  @media (max-width: 480px) {
+    body { padding: 20px 14px 36px; }
+    .risk-block { flex-direction: column; align-items: stretch; }
+    .card { padding: 16px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="page-head">
+    <h1>Position Size Calculator</h1>
+    <p>Enter what you're willing to lose, then the stop distance in pips for the pair you're trading. The lot size to type into MT5 updates as you go.</p>
+  </div>
+
+  <div class="risk-block">
+    <div class="field risk-field">
+      <label for="riskAmount">Maximum risk on this trade</label>
+      <div class="amount-input">
+        <span class="unit">$</span>
+        <input type="number" id="riskAmount" value="2" step="0.5" min="0" oninput="calcAll()">
+      </div>
+    </div>
+  </div>
+
+  <div class="grid">
+
+    <div class="card">
+      <div class="card-head">
+        <h2>USD quote pairs</h2>
+        <div class="examples">EUR/USD, GBP/USD, AUD/USD</div>
+      </div>
+      <div class="field">
+        <label for="usdPips">Stop loss distance (pips)</label>
+        <input type="number" id="usdPips" value="1.1" step="0.1" min="0" oninput="calcAll()">
+      </div>
+      <div class="result">
+        <div class="result-lots"><span class="k">Lots — enter in MT5</span><span class="v" id="usdStd">–</span></div>
+        <div class="result-units"><span class="k">Units</span><span class="v" id="usdUnits">–</span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <h2>GBP quote pairs</h2>
+        <div class="examples">EUR/GBP, AUD/GBP</div>
+      </div>
+      <div class="field">
+        <label for="gbpPips">Stop loss distance (pips)</label>
+        <input type="number" id="gbpPips" value="1.1" step="0.1" min="0" oninput="calcAll()">
+      </div>
+      <div class="field">
+        <label for="gbpUsdRate">Current GBP/USD rate</label>
+        <input type="number" id="gbpUsdRate" value="1.27" step="0.0001" min="0" oninput="calcAll()">
+      </div>
+      <div class="result">
+        <div class="result-lots"><span class="k">Lots — enter in MT5</span><span class="v" id="gbpStd">–</span></div>
+        <div class="result-units"><span class="k">Units</span><span class="v" id="gbpUnits">–</span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <h2>JPY quote pairs</h2>
+        <div class="examples">USD/JPY, EUR/JPY, GBP/JPY</div>
+      </div>
+      <div class="field">
+        <label for="jpyPips">Stop loss distance (pips)</label>
+        <input type="number" id="jpyPips" value="11" step="0.1" min="0" oninput="calcAll()">
+      </div>
+      <div class="field">
+        <label for="jpyRate">Current pair rate</label>
+        <input type="number" id="jpyRate" value="147.50" step="0.01" min="0" oninput="calcAll()">
+      </div>
+      <div class="result">
+        <div class="result-lots"><span class="k">Lots — enter in MT5</span><span class="v" id="jpyStd">–</span></div>
+        <div class="result-units"><span class="k">Units</span><span class="v" id="jpyUnits">–</span></div>
+      </div>
+    </div>
+
+  </div>
+
+  <footer>USD and GBP quote pairs use 0.0001 per pip. JPY quote pairs use 0.01 per pip. Lots are rounded down to MT5's 0.01 volume step so the result never risks more than the amount you entered.</footer>
+</div>
+
+<script>
+function fmt(n) {
+  if (!isFinite(n) || isNaN(n)) return '–';
+  return n.toLocaleString('en-US', {maximumFractionDigits: 2});
+}
+
+function fmtLots(n) {
+  if (!isFinite(n) || isNaN(n)) return '–';
+  const rounded = Math.floor(n * 100) / 100;
+  if (rounded < 0.01) return '0.01 (min)';
+  return rounded.toFixed(2);
+}
+
+const STORAGE_KEY = 'posSizeCalc.inputs.v1';
+const FIELD_IDS = ['riskAmount', 'usdPips', 'gbpPips', 'gbpUsdRate', 'jpyPips', 'jpyRate'];
+
+function saveInputs() {
+  try {
+    const data = {};
+    FIELD_IDS.forEach(id => { data[id] = document.getElementById(id).value; });
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  } catch (e) {
+    // Storage unavailable (private browsing, etc.) — fields just won't persist.
+  }
+}
+
+function loadInputs() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+    const data = JSON.parse(raw);
+    FIELD_IDS.forEach(id => {
+      if (data[id] !== undefined && data[id] !== '') {
+        document.getElementById(id).value = data[id];
+      }
+    });
+  } catch (e) {
+    // Ignore corrupt or unavailable storage and fall back to the defaults in the HTML.
+  }
+}
+
+function calcAll() {
+  saveInputs();
+  const risk = parseFloat(document.getElementById('riskAmount').value) || 0;
+
+  const usdPips = parseFloat(document.getElementById('usdPips').value) || 0;
+  if (usdPips > 0) {
+    const pipValuePerUnit = 0.0001;
+    const units = risk / (usdPips * pipValuePerUnit);
+    document.getElementById('usdUnits').textContent = fmt(units);
+    document.getElementById('usdStd').textContent = fmtLots(units / 100000);
+  } else {
+    document.getElementById('usdUnits').textContent = '–';
+    document.getElementById('usdStd').textContent = '–';
+  }
+
+  const gbpPips = parseFloat(document.getElementById('gbpPips').value) || 0;
+  const gbpUsdRate = parseFloat(document.getElementById('gbpUsdRate').value) || 0;
+  if (gbpPips > 0 && gbpUsdRate > 0) {
+    const pipValuePerUnitUSD = 0.0001 * gbpUsdRate;
+    const units = risk / (gbpPips * pipValuePerUnitUSD);
+    document.getElementById('gbpUnits').textContent = fmt(units);
+    document.getElementById('gbpStd').textContent = fmtLots(units / 100000);
+  } else {
+    document.getElementById('gbpUnits').textContent = '–';
+    document.getElementById('gbpStd').textContent = '–';
+  }
+
+  const jpyPips = parseFloat(document.getElementById('jpyPips').value) || 0;
+  const jpyRate = parseFloat(document.getElementById('jpyRate').value) || 0;
+  if (jpyPips > 0 && jpyRate > 0) {
+    const pipValuePerUnitUSD = 0.01 / jpyRate;
+    const units = risk / (jpyPips * pipValuePerUnitUSD);
+    document.getElementById('jpyUnits').textContent = fmt(units);
+    document.getElementById('jpyStd').textContent = fmtLots(units / 100000);
+  } else {
+    document.getElementById('jpyUnits').textContent = '–';
+    document.getElementById('jpyStd').textContent = '–';
+  }
+}
+
+loadInputs();
+calcAll();
+</script>
+</body>
+</html>
